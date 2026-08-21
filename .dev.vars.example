@@ -1,3 +1,4 @@
 # Copy this file to .dev.vars for local Cloudflare development.
 GEMINI_API_KEY=
 GEMINI_MODEL=gemini-3.6-flash
+OPERATOR_ACCESS_TOKEN=

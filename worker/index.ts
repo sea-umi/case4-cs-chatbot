@@ -18,6 +18,7 @@ interface Env {
   DB: D1Database;
   GEMINI_API_KEY?: string;
   GEMINI_MODEL?: string;
+  OPERATOR_ACCESS_TOKEN?: string;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
@@ -80,6 +81,20 @@ function databaseUnavailable(env: Env): Response | undefined {
   return undefined;
 }
 
+function operatorAuthorizationError(request: Request, env: Env): Response | undefined {
+  const expectedToken = env.OPERATOR_ACCESS_TOKEN?.trim();
+  if (!expectedToken) {
+    return json({ error: "operator access is not configured" }, 503);
+  }
+
+  const receivedToken = request.headers.get("x-operator-token")?.trim();
+  if (!receivedToken || receivedToken !== expectedToken) {
+    return json({ error: "operator authorization required" }, 401);
+  }
+
+  return undefined;
+}
+
 function getConversationId(pathname: string): string | undefined {
   const match = pathname.match(/^\/api\/conversations\/([^/]+)\/messages\/?$/);
   if (!match) return undefined;
@@ -92,14 +107,18 @@ function getConversationId(pathname: string): string | undefined {
   }
 }
 
-async function parseMessageContent(request: Request): Promise<string | undefined> {
+type IncomingMessageRole = "customer" | "operator";
+
+async function parseMessageRequest(
+  request: Request,
+): Promise<{ content: string; role: IncomingMessageRole } | undefined> {
   try {
-    const payload = (await request.json()) as { content?: unknown };
+    const payload = (await request.json()) as { content?: unknown; role?: unknown };
     if (typeof payload.content !== "string") return undefined;
 
     const content = payload.content.trim();
     if (!content || content.length > MAX_MESSAGE_LENGTH) return undefined;
-    return content;
+    return { content, role: payload.role === "operator" ? "operator" : "customer" };
   } catch {
     return undefined;
   }
@@ -238,10 +257,37 @@ async function handleApiRequest(request: Request, env: Env): Promise<Response | 
   }
 
   if (url.pathname === "/api/conversations" || url.pathname === "/api/conversations/") {
-    if (request.method !== "POST") return methodNotAllowed("POST");
-
     const unavailable = databaseUnavailable(env);
     if (unavailable) return unavailable;
+
+    if (request.method === "GET") {
+      const unauthorized = operatorAuthorizationError(request, env);
+      if (unauthorized) return unauthorized;
+
+      try {
+        const result = await env.DB.prepare(
+          `SELECT c.id, c.status, c.created_at, c.updated_at,
+             (SELECT content FROM messages WHERE conversation_id = c.id ORDER BY created_at DESC, id DESC LIMIT 1) AS preview,
+             (SELECT COUNT(*) FROM messages WHERE conversation_id = c.id) AS message_count
+           FROM conversations c
+           ORDER BY c.updated_at DESC, c.created_at DESC
+           LIMIT 100`,
+        ).all<{ id: string; status: string; created_at: string; updated_at: string; preview?: string; message_count: number }>();
+        return json({ conversations: result.results.map((conversation) => ({
+          id: conversation.id,
+          status: conversation.status,
+          createdAt: conversation.created_at,
+          updatedAt: conversation.updated_at,
+          preview: conversation.preview ?? "",
+          messageCount: conversation.message_count,
+        })) });
+      } catch (error) {
+        console.error("Failed to list conversations", error);
+        return json({ error: "could not load conversations" }, 500);
+      }
+    }
+
+    if (request.method !== "POST") return methodNotAllowed("GET, POST");
 
     const id = createBackendId();
     const status = CONVERSATION_STATUS;
@@ -287,16 +333,46 @@ async function handleApiRequest(request: Request, env: Env): Promise<Response | 
     const unavailable = databaseUnavailable(env);
     if (unavailable) return unavailable;
 
-    const content = await parseMessageContent(request);
-    if (!content) {
+    const messageRequest = await parseMessageRequest(request);
+    if (!messageRequest) {
       return json({ error: `content is required and must be ${MAX_MESSAGE_LENGTH} characters or fewer` }, 400);
     }
+    const { content, role } = messageRequest;
 
     try {
       const conversation = await env.DB.prepare(
         "SELECT id, status FROM conversations WHERE id = ?",
       ).bind(conversationId).first<ConversationRow>();
       if (!conversation) return json({ error: "conversation not found" }, 404);
+
+      if (role === "operator") {
+        const unauthorized = operatorAuthorizationError(request, env);
+        if (unauthorized) return unauthorized;
+
+        const operatorMessage = {
+          id: createBackendId(),
+          conversationId,
+          role: "operator" as const,
+          content,
+          createdAt: new Date().toISOString(),
+        };
+        await env.DB.batch([
+          env.DB.prepare(
+            `INSERT INTO messages (id, conversation_id, role, content, created_at)
+             VALUES (?, ?, ?, ?, ?)`,
+          ).bind(operatorMessage.id, operatorMessage.conversationId, operatorMessage.role, operatorMessage.content, operatorMessage.createdAt),
+          env.DB.prepare(
+            "UPDATE conversations SET updated_at = ? WHERE id = ?",
+          ).bind(operatorMessage.createdAt, conversationId),
+        ]);
+        return json({ message: toMessage({
+          id: operatorMessage.id,
+          conversation_id: operatorMessage.conversationId,
+          role: operatorMessage.role,
+          content: operatorMessage.content,
+          created_at: operatorMessage.createdAt,
+        }) }, 201);
+      }
 
       const customerMessage = {
         id: createBackendId(),
@@ -335,6 +411,9 @@ async function handleApiRequest(request: Request, env: Env): Promise<Response | 
           assistantMessage.content,
           assistantMessage.createdAt,
         ),
+        env.DB.prepare(
+          "UPDATE conversations SET updated_at = ? WHERE id = ?",
+        ).bind(assistantMessage.createdAt, conversationId),
       ]);
 
       return json({ message: toMessage({
