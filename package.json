@@ -11,6 +11,8 @@
     "start": "vinext start",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .worktrees --ignore-pattern .vinext --ignore-pattern .wrangler",
+    "db:init:local": "wrangler d1 execute DB --local --config wrangler.local.jsonc --file=db/schema.sql",
+    "db:seed:local": "wrangler d1 execute DB --local --config wrangler.local.jsonc --file=db/seed.sql",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/configuration/schema.json",
+  "name": "case4-cs-chatbot-local",
+  "compatibility_date": "2026-08-21",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "site-creator-d1",
+      "database_id": "00000000-0000-4000-8000-000000000000"
+    }
+  ]
+}
