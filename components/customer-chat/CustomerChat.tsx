@@ -165,6 +165,44 @@ export default function CustomerChat() {
   }, []);
 
   useEffect(() => {
+    if (!conversationId) return;
+    let cancelled = false;
+
+    async function syncMessages() {
+      try {
+        const response = await fetch(`/api/conversations/${encodeURIComponent(conversationId)}/messages`);
+        if (!response.ok) return;
+        const data = (await response.json()) as { messages?: ApiMessage[] };
+        const serverMessages = (data.messages ?? [])
+          .map(normalizeMessage)
+          .filter((message): message is ChatMessage => message !== null);
+        if (cancelled || serverMessages.length === 0) return;
+
+        setMessages((current) => {
+          const pendingCustomerMessages = current.filter((message) => (
+            message.role === "customer"
+            && !serverMessages.some((serverMessage) => serverMessage.role === "customer" && serverMessage.content === message.content)
+          ));
+          return [...serverMessages, ...pendingCustomerMessages];
+        });
+
+        if (serverMessages.some((message) => message.role === "operator")) {
+          setConversationStatus("operator");
+          setHandoffRequested(true);
+        }
+      } catch {
+        // Keep the current conversation visible if a background refresh fails.
+      }
+    }
+
+    const syncTimer = window.setInterval(() => void syncMessages(), 2000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(syncTimer);
+    };
+  }, [conversationId]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, isSending, handoffRequested]);
 
