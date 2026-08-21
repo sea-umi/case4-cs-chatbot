@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OperatorDashboard } from "../../components/operator-dashboard/OperatorDashboard";
+import { LiveOperatorDashboard } from "../../components/operator-dashboard/LiveOperatorDashboard";
 
 export const metadata: Metadata = {
   title: "Operator Console | Support Desk",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function OperatorPage() {
-  return <OperatorDashboard />;
+  return <LiveOperatorDashboard />;
 }
