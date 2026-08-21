@@ -1,6 +1,6 @@
 export const CONVERSATION_STATUS = "open" as const;
 export const MAX_MESSAGE_LENGTH = 10_000;
-export const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+export const DEFAULT_GEMINI_MODEL = "gemini-3.6-flash";
 export const FAQ_CANDIDATE_LIMIT = 8;
 export const GEMINI_REQUEST_TIMEOUT_MS = 8_000;
 export const SAFE_PLACEHOLDER_REPLY =
