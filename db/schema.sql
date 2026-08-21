@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS conversations (
   id TEXT PRIMARY KEY NOT NULL,
   status TEXT NOT NULL DEFAULT 'open'
     CHECK (status IN ('open', 'closed')),
+  handling_mode TEXT NOT NULL DEFAULT 'ai'
+    CHECK (handling_mode IN ('ai', 'operator')),
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

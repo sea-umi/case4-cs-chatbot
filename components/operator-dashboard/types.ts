@@ -22,4 +22,5 @@ export type Conversation = {
   priority: "高" | "通常";
   updatedAt: string;
   messages: Message[];
+  operatorMessageCount?: number;
 };

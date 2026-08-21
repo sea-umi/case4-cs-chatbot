@@ -220,7 +220,11 @@ export default function CustomerChat() {
           ),
         ]);
       }
-      if (data.status) setConversationStatus(statusFromApi(data.status));
+      if (data.status) {
+        const nextStatus = statusFromApi(data.status);
+        setConversationStatus(nextStatus);
+        if (nextStatus === "operator") setHandoffRequested(true);
+      }
       setIsOffline(false);
     } catch {
       setIsOffline(true);
@@ -238,18 +242,37 @@ export default function CustomerChat() {
     }
   }
 
-  function requestHandoff() {
-    setHandoffRequested(true);
-    setConversationStatus("operator");
-    setMessages((current) => [
-      ...current,
-      {
-        id: `handoff-${Date.now()}`,
-        role: "assistant",
-        content: "担当者への引き継ぎを受け付けました。確認でき次第、このチャットでご案内します。",
-        time: "今",
-      },
-    ]);
+  async function requestHandoff() {
+    if (isSending || conversationStatus === "closed") return;
+    const content = "オペレーターに相談したいです";
+    setIsSending(true);
+    if (!conversationId) {
+      setHandoffRequested(true);
+      setConversationStatus("operator");
+      setMessages((current) => [...current, { id: `handoff-${Date.now()}`, role: "assistant", content: "担当者への引き継ぎを受け付けました。確認でき次第、このチャットでご案内します。", time: "今" }]);
+      setIsSending(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/conversations/${encodeURIComponent(conversationId)}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content, message: content, handoff: true }),
+      });
+      if (!response.ok) throw new Error("handoff could not be requested");
+      const data = (await response.json()) as { message?: ApiMessage; reply?: ApiMessage; status?: string };
+      const customerMessage = data.message ? normalizeMessage(data.message, 0) : null;
+      const answer = data.reply ? normalizeMessage(data.reply, 1) : null;
+      setMessages((current) => [...current, ...(customerMessage ? [customerMessage] : []), ...(answer ? [answer] : [])]);
+      setHandoffRequested(true);
+      setConversationStatus(statusFromApi(data.status));
+      setIsOffline(false);
+    } catch {
+      setIsOffline(true);
+    } finally {
+      setIsSending(false);
+    }
   }
 
   return (
