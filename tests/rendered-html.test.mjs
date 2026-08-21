@@ -33,7 +33,8 @@ test("server-renders the BOTANICA storefront entry page", async () => {
   assert.match(html, /肌と暮らしに、/);
   assert.match(html, /商品一覧/);
   assert.match(html, /href="\/customer"/);
-  assert.match(html, /href="\/operator"/);
+  assert.match(html, /商品について相談/);
+  assert.doesNotMatch(html, /スタッフ用管理画面/);
 });
 
 test("keeps the customer and operator routes in the project", async () => {

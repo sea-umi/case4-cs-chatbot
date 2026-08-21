@@ -102,7 +102,9 @@ export default function Home() {
 
       <section className={styles.supportBand} id="story"><div><p className={styles.eyebrow}>NEED A LITTLE HELP?</p><h2>商品選びに迷ったら、<br />チャットでご相談ください。</h2><p>在庫・配送状況・返品についても、AIがすぐにご案内します。複雑なご相談はスタッフへおつなぎします。</p></div><Link href="/customer" className={styles.supportButton}>ショップサポートへ <span>→</span></Link></section>
 
-      <footer className={styles.footer}><Link href="/" className={styles.logo}>BOTANICA<span> botanical care</span></Link><p>© 2026 BOTANICA. All rights reserved.</p><Link href="/operator" className={styles.staffLink}>スタッフ用管理画面</Link></footer>
+      <footer className={styles.footer}><Link href="/" className={styles.logo}>BOTANICA<span> botanical care</span></Link><p>© 2026 BOTANICA. All rights reserved.</p></footer>
+
+      <Link href="/customer" className={styles.floatingChat} aria-label="商品についてチャットで相談する"><span className={styles.chatIcon} aria-hidden="true">✦</span><span>商品について相談</span><b aria-hidden="true">↗</b></Link>
 
       {cartOpen && <div className={styles.cartOverlay}><button className={styles.cartBackdrop} onClick={() => setCartOpen(false)} aria-label="カートを閉じる" /><aside className={styles.cartDrawer} role="dialog" aria-modal="true" aria-label="ショッピングカート">
         <div className={styles.cartHeader}><div><p className={styles.eyebrow}>YOUR CART</p><h2>ショッピングカート</h2></div><button onClick={() => setCartOpen(false)} aria-label="カートを閉じる">×</button></div>
