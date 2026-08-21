@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Starter Project",
-  description: "A clean starting point for building your site.",
+  title: "CSチャットボット",
+  description: "ECサイト向けカスタマーサポートチャットボット",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
