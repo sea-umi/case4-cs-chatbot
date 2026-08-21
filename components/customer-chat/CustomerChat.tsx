@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import styles from "./CustomerChat.module.css";
 
 type MessageRole = "customer" | "assistant" | "operator";
@@ -256,9 +257,9 @@ export default function CustomerChat() {
       <div className={styles.chatWindow}>
         <header className={styles.header}>
           <div className={styles.headerTitle}>
-            <a className={styles.backButton} href="/" aria-label="ショップに戻る">
+            <Link className={styles.backButton} href="/" aria-label="ショップに戻る">
               <Icon name="back" />
-            </a>
+            </Link>
             <div className={styles.avatar} aria-hidden="true">
               <Icon name="spark" />
             </div>
