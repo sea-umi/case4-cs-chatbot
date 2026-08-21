@@ -565,7 +565,7 @@ async function handleApiRequest(request: Request, env: Env): Promise<Response | 
         role: assistantMessage.role,
         content: assistantMessage.content,
         created_at: assistantMessage.createdAt,
-      }) }, 201);
+      }), status: assistantResolution.needsOperator ? "operator" : "ai" }, 201);
     } catch (error) {
       console.error("Failed to save conversation message", error);
       return json({ error: "could not save message" }, 500);

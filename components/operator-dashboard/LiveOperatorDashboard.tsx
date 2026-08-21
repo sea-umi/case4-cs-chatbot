@@ -76,6 +76,13 @@ export function LiveOperatorDashboard() {
   const [resolveNotice, setResolveNotice] = useState("");
 
   useEffect(() => {
+    const savedToken = window.sessionStorage.getItem("case4.operator.token");
+    if (!savedToken) return;
+    const restoreToken = window.setTimeout(() => setToken(savedToken), 0);
+    return () => window.clearTimeout(restoreToken);
+  }, []);
+
+  useEffect(() => {
     if (!token) return;
     let cancelled = false;
     fetch("/api/conversations", { headers: { "x-operator-token": token } })
@@ -132,7 +139,12 @@ export function LiveOperatorDashboard() {
 
   function submitToken(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (tokenInput.trim()) { setLoading(true); setToken(tokenInput.trim()); }
+    if (tokenInput.trim()) {
+      const nextToken = tokenInput.trim();
+      window.sessionStorage.setItem("case4.operator.token", nextToken);
+      setLoading(true);
+      setToken(nextToken);
+    }
   }
 
   async function sendMessage(body: string) {
@@ -175,5 +187,5 @@ export function LiveOperatorDashboard() {
     return <main className="flex min-h-screen items-center justify-center bg-[#f8fafc] px-6"><form onSubmit={submitToken} className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm"><p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-600">Operator Console</p><h1 className="mt-3 text-xl font-semibold text-slate-900">管理画面にログイン</h1><p className="mt-3 text-sm leading-6 text-slate-500">管理用アクセストークンを入力してください。</p><label className="mt-6 block text-sm font-medium text-slate-700">アクセストークン<input type="password" value={tokenInput} onChange={(event) => setTokenInput(event.target.value)} className="mt-2 h-11 w-full rounded-lg border border-slate-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" /></label>{error && <p className="mt-3 text-sm text-rose-600">{error}</p>}<button type="submit" className="mt-6 w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700">管理画面を開く</button></form></main>;
   }
 
-  return <main className="h-screen overflow-hidden bg-[#f8fafc] text-slate-900"><header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-5 lg:px-7"><div><p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Live Inbox</p><h2 className="mt-0.5 text-sm font-semibold text-slate-800">問い合わせ一覧</h2></div><div className="flex items-center gap-3"><span className="hidden rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-medium text-emerald-700 sm:block">認証済み</span><button onClick={() => { setToken(""); setTokenInput(""); }} className="rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:bg-slate-50">ログアウト</button></div></header>{error && <p className="shrink-0 border-b border-rose-100 bg-rose-50 px-6 py-3 text-sm text-rose-700">{error}</p>}<div className="flex min-h-0 flex-1 flex-col lg:flex-row"><ConversationList conversations={visible} selectedId={selectedId} search={search} category={category} status={status} onSearchChange={setSearch} onCategoryChange={setCategory} onStatusChange={setStatus} onSelect={selectConversation} />{selected ? <ConversationDetail conversation={selected} showEscalation={false} onCloseEscalation={() => undefined} onResolve={markResolved} resolveNotice={resolveNotice} onEscalate={() => undefined} onSend={sendMessage} /> : <section className="flex min-h-0 flex-1 items-center justify-center bg-[#f8fafc] text-sm text-slate-400">{loading ? "問い合わせを読み込んでいます…" : "問い合わせがありません"}</section>}</div></main>;
+  return <main className="h-dvh overflow-hidden bg-[#f8fafc] text-slate-900"><header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-5 lg:px-7"><div><p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Live Inbox</p><h2 className="mt-0.5 text-sm font-semibold text-slate-800">問い合わせ一覧</h2></div><div className="flex items-center gap-3"><span className="hidden rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-medium text-emerald-700 sm:block">認証済み</span><button onClick={() => { window.sessionStorage.removeItem("case4.operator.token"); setToken(""); setTokenInput(""); }} className="rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:bg-slate-50">ログアウト</button></div></header>{error && <p className="shrink-0 border-b border-rose-100 bg-rose-50 px-6 py-3 text-sm text-rose-700">{error}</p>}<div className="flex min-h-0 flex-1 flex-col lg:flex-row"><ConversationList conversations={visible} selectedId={selectedId} search={search} category={category} status={status} onSearchChange={setSearch} onCategoryChange={setCategory} onStatusChange={setStatus} onSelect={selectConversation} />{selected ? <ConversationDetail conversation={selected} showEscalation={false} onCloseEscalation={() => undefined} onResolve={markResolved} resolveNotice={resolveNotice} onEscalate={() => undefined} onSend={sendMessage} /> : <section className="flex min-h-0 flex-1 items-center justify-center bg-[#f8fafc] text-sm text-slate-400">{loading ? "問い合わせを読み込んでいます…" : "問い合わせがありません"}</section>}</div></main>;
 }
