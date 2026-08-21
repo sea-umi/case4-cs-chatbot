@@ -85,25 +85,31 @@ export function LiveOperatorDashboard() {
   useEffect(() => {
     if (!token) return;
     let cancelled = false;
-    fetch("/api/conversations", { headers: { "x-operator-token": token } })
-      .then(async (response) => {
+    async function loadConversations() {
+      try {
+        const response = await fetch("/api/conversations", { headers: { "x-operator-token": token } });
         if (!response.ok) throw new Error(response.status === 401 ? "トークンが正しくありません" : "問い合わせ一覧を取得できませんでした");
-        return (await response.json()) as { conversations: ApiConversation[] };
-      })
-      .then((data) => {
+        const data = (await response.json()) as { conversations: ApiConversation[] };
         if (cancelled) return;
         const next = data.conversations.map(mapConversation);
-        setConversations(next);
+        setConversations((current) => next.map((item) => {
+          const previous = current.find((conversation) => conversation.id === item.id);
+          return previous ? { ...item, messages: previous.messages } : item;
+        }));
         setSelectedId((current) => next.some((item) => item.id === current) ? current : next[0]?.id ?? "");
         setError("");
-      })
-      .catch((reason: unknown) => {
+      } catch (reason: unknown) {
         if (cancelled) return;
         setError(reason instanceof Error ? reason.message : "管理画面を読み込めませんでした");
         setToken("");
-      })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void loadConversations();
+    const refreshTimer = window.setInterval(() => void loadConversations(), 3000);
+    return () => { cancelled = true; window.clearInterval(refreshTimer); };
   }, [token]);
 
   const visible = useMemo(() => conversations.filter((item) => {
