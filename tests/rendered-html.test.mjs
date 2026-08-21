@@ -23,15 +23,15 @@ async function render(pathname = "/") {
   );
 }
 
-test("server-renders the CS chatbot entry page", async () => {
+test("server-renders the BOTANICA storefront entry page", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>CSチャットボット<\/title>/i);
-  assert.match(html, /お問い合わせ対応を、/);
-  assert.match(html, /AIと人/);
+  assert.match(html, /<title>BOTANICA \| Natural Care<\/title>/i);
+  assert.match(html, /肌と暮らしに、/);
+  assert.match(html, /商品一覧/);
   assert.match(html, /href="\/customer"/);
   assert.match(html, /href="\/operator"/);
 });
