@@ -1,4 +1,30 @@
-# vinext-starter
+# 案件4：ECサイト向けCSチャットボット
+
+顧客向けチャット、オペレーター管理画面、Gemini APIによるFAQ回答をCloudflare上で動かすMVPです。
+
+## ローカル起動
+
+```bash
+npm install
+npm run db:init:local
+npm run db:seed:local
+npm run dev
+```
+
+Gemini APIを使う場合は`.dev.vars.example`を`.dev.vars`へコピーし、`GEMINI_API_KEY`を設定します。キーがない場合は安全な仮回答へフォールバックします。
+
+## 主なURL
+
+- `/`：案件トップ
+- `/customer`：顧客チャット
+- `/operator`：オペレーター管理画面
+
+## 技術構成
+
+- Cloudflare Workers / D1
+- Vinext / React
+- Gemini Generate Content API
+- FAQデータ：D1 `faqs` テーブル
 
 A clean full-stack starter running on
 [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
