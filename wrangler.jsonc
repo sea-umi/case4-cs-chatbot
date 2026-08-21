@@ -1,0 +1,22 @@
+{
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/configuration/schema.json",
+  "name": "case4-cs-chatbot",
+  "main": "./dist/server/index.js",
+  "compatibility_date": "2026-08-21",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "case4-cs-chatbot-db",
+      "database_id": "66c840c3-4c64-45cb-80e3-d7856feeaaf1"
+    }
+  ],
+  "vars": {
+    "GEMINI_MODEL": "gemini-3.6-flash"
+  }
+}

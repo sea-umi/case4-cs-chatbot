@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import styles from "./Home.module.css";
 
@@ -52,11 +51,12 @@ export default function Home() {
     <main className={styles.page}>
       <div className={styles.announcement}>5,000円以上のご注文で送料無料 / 平日15時までのご注文は最短翌日発送</div>
       <header className={styles.header}>
-        <Link href="/" className={styles.logo} aria-label="BOTANICA ホーム">BOTANICA<span> botanical care</span></Link>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        <a href="/" className={styles.logo} aria-label="BOTANICA ホーム">BOTANICA<span> botanical care</span></a>
         <nav className={styles.nav} aria-label="メインナビゲーション">
           <a href="#products">商品一覧</a>
           <a href="#story">BOTANICAについて</a>
-          <Link href="/customer">ご利用ガイド</Link>
+          <a href="/customer">ご利用ガイド</a>
         </nav>
         <div className={styles.headerActions}>
           <label className={styles.searchBox}>
@@ -72,7 +72,7 @@ export default function Home() {
           <p className={styles.eyebrow}>NATURAL CARE FOR EVERYDAY</p>
           <h1>肌と暮らしに、<br /><em>植物の余白</em>を。</h1>
           <p className={styles.heroLead}>自然由来の成分と心地よい香りで、毎日のケアを自分らしく。BOTANICAは、肌にも環境にもやさしいケアを提案します。</p>
-          <div className={styles.heroActions}><a className={styles.primaryAction} href="#products">商品を見る <span>→</span></a><Link className={styles.textAction} href="/customer">商品選びをチャットで相談 <span>↗</span></Link></div>
+          <div className={styles.heroActions}><a className={styles.primaryAction} href="#products">商品を見る <span>→</span></a><a className={styles.textAction} href="/customer">商品選びをチャットで相談 <span>↗</span></a></div>
         </div>
         <div className={styles.heroVisual} aria-label="BOTANICA 春のケアコレクション">
           <div className={styles.heroCircle} />
@@ -100,11 +100,15 @@ export default function Home() {
         </article>)}</div> : <p className={styles.emptyState}>該当する商品が見つかりませんでした。</p>}
       </section>
 
-      <section className={styles.supportBand} id="story"><div><p className={styles.eyebrow}>NEED A LITTLE HELP?</p><h2>商品選びに迷ったら、<br />チャットでご相談ください。</h2><p>在庫・配送状況・返品についても、AIがすぐにご案内します。複雑なご相談はスタッフへおつなぎします。</p></div><Link href="/customer" className={styles.supportButton}>ショップサポートへ <span>→</span></Link></section>
+      <section className={styles.supportBand} id="story"><div><p className={styles.eyebrow}>NEED A LITTLE HELP?</p><h2>商品選びに迷ったら、<br />チャットでご相談ください。</h2><p>在庫・配送状況・返品についても、AIがすぐにご案内します。複雑なご相談はスタッフへおつなぎします。</p></div><a href="/customer" className={styles.supportButton}>ショップサポートへ <span>→</span></a></section>
 
-      <footer className={styles.footer}><Link href="/" className={styles.logo}>BOTANICA<span> botanical care</span></Link><p>© 2026 BOTANICA. All rights reserved.</p></footer>
+      <footer className={styles.footer}>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        <a href="/" className={styles.logo}>BOTANICA<span> botanical care</span></a>
+        <p>© 2026 BOTANICA. All rights reserved.</p>
+      </footer>
 
-      <Link href="/customer" className={styles.floatingChat} aria-label="商品についてチャットで相談する"><span className={styles.chatIcon} aria-hidden="true">✦</span><span>商品について相談</span><b aria-hidden="true">↗</b></Link>
+      <a href="/customer" className={styles.floatingChat} aria-label="商品についてチャットで相談する"><span className={styles.chatIcon} aria-hidden="true">✦</span><span>商品について相談</span><b aria-hidden="true">↗</b></a>
 
       {cartOpen && <div className={styles.cartOverlay}><button className={styles.cartBackdrop} onClick={() => setCartOpen(false)} aria-label="カートを閉じる" /><aside className={styles.cartDrawer} role="dialog" aria-modal="true" aria-label="ショッピングカート">
         <div className={styles.cartHeader}><div><p className={styles.eyebrow}>YOUR CART</p><h2>ショッピングカート</h2></div><button onClick={() => setCartOpen(false)} aria-label="カートを閉じる">×</button></div>
